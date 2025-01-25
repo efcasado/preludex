@@ -55,7 +55,8 @@ iex(2)> Preludex.Verify.check("3051", "+34123456789")
 ```elixir
 alias Preludex.Verify
 
-{:ok, %{"status" => status}} = Verify.create_or_retry("+30123456789")
+# Basic usage
+{:ok, %{"status" => status}} = Verify.create_or_retry("+34123456789")
 
 case status do
   "success" ->
@@ -65,6 +66,19 @@ case status do
   "blocked" ->
     IO.puts("Phone number blocked")
 end
+
+# With options
+{:ok, verification} = Verify.create_or_retry("+34123456789",
+  # Customize verification settings
+  code_size: 6,
+  locale: "es-ES",
+  
+  # Enable auto-fill on Android
+  app_realm: [
+    platform: "android",
+    hash: "your_app_hash_here"
+  ]
+)
 ```
 
 ### Check a Verification Code
