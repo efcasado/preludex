@@ -1,0 +1,85 @@
+# Load versions from .versions file
+function load_versions() {
+    if [ -f .versions ]; then
+        while IFS='=' read -r key value; do
+            if [[ ! $key =~ ^# && -n $value ]]; then
+                export "$key"="${value//\"/}"
+            fi
+        done < .versions
+    fi
+}
+
+function elixir() {
+    # Store any pre-existing override
+    local OVERRIDE_VERSION=$ELIXIR_VERSION
+    # Load latest versions
+    load_versions
+    # Restore override if it was set
+    if [ -n "$OVERRIDE_VERSION" ]; then
+        ELIXIR_VERSION=$OVERRIDE_VERSION
+    fi
+    # Allow fallback to default if neither override nor .versions specified
+    ELIXIR_VERSION=${ELIXIR_VERSION:-1.15.7}
+    DOCKER_IMAGE=elixir:${ELIXIR_VERSION}
+    # Docker options
+    if [ "$(uname)" = "Linux" ]; then
+        DOCKER_RUN_OPTS="--rm -i --network host -v ${PWD}:${PWD}:rw -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro -u $(id -u):$(id -g) -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
+    else
+        DOCKER_RUN_OPTS="--rm -i --network host -v ${PWD}:${PWD}:rw -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
+    fi
+    if [ -n "$ZSH_VERSION" ]; then
+        docker run ${=DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^ZSH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} elixir "$@"
+    else
+        docker run ${DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^BASH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} elixir "$@"
+    fi
+}
+
+function iex() {
+    # Store any pre-existing override
+    local OVERRIDE_VERSION=$ELIXIR_VERSION
+    # Load latest versions
+    load_versions
+    # Restore override if it was set
+    if [ -n "$OVERRIDE_VERSION" ]; then
+        ELIXIR_VERSION=$OVERRIDE_VERSION
+    fi
+    # Allow fallback to default if neither override nor .versions specified
+    ELIXIR_VERSION=${ELIXIR_VERSION:-1.15.7}
+    DOCKER_IMAGE=elixir:${ELIXIR_VERSION}
+    # Docker options
+    if [ "$(uname)" = "Linux" ]; then
+        DOCKER_RUN_OPTS="--rm -it --network host -v ${PWD}:${PWD}:rw -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro -u $(id -u):$(id -g) -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
+    else
+        DOCKER_RUN_OPTS="--rm -it --network host -v ${PWD}:${PWD}:rw -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
+    fi
+    if [ -n "$ZSH_VERSION" ]; then
+        docker run ${=DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^ZSH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} iex "$@"
+    else
+        docker run ${DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^BASH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} iex "$@"
+    fi
+}
+
+function mix() {
+    # Store any pre-existing override
+    local OVERRIDE_VERSION=$ELIXIR_VERSION
+    # Load latest versions
+    load_versions
+    # Restore override if it was set
+    if [ -n "$OVERRIDE_VERSION" ]; then
+        ELIXIR_VERSION=$OVERRIDE_VERSION
+    fi
+    # Allow fallback to default if neither override nor .versions specified
+    ELIXIR_VERSION=${ELIXIR_VERSION:-1.15.7}
+    DOCKER_IMAGE=elixir:${ELIXIR_VERSION}
+    # Docker options
+    if [ "$(uname)" = "Linux" ]; then
+        DOCKER_RUN_OPTS="--rm -it --network host -v ${PWD}:${PWD}:rw -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro -u $(id -u):$(id -g) -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
+    else
+        DOCKER_RUN_OPTS="--rm -it --network host -v ${PWD}:${PWD}:rw -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
+    fi
+    if [ -n "$ZSH_VERSION" ]; then
+        docker run ${=DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^ZSH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} mix "$@"
+    else
+        docker run ${DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^BASH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} mix "$@"
+    fi
+}
