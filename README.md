@@ -1,6 +1,6 @@
 # Preludex
 
-An Elixir SDK for [Prelude](https://docs.prelude.so/), a powerful API for user verification and authentication.
+An Elixir SDK for [Prelude](https://prelude.so/), a powerful API for user verification and authentication.
 
 ## Installation
 
