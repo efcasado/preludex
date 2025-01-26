@@ -1,5 +1,5 @@
 .PHONY: all clean
-.PHONY: deps compile iex version versions
+.PHONY: deps compile iex version versions livebook
 
 SHELL := BASH_ENV=.rc /bin/bash --noprofile
 
@@ -22,6 +22,9 @@ compile: deps  ## Compile the project
 
 iex:  compile ## Start an interactive Elixir shell
 	iex -S mix
+
+livebook: compile ## Start Livebook server with notebooks directory mounted
+	livebook
 
 clean:  ## Clean all build artifacts
 	mix clean --all

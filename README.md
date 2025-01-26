@@ -86,7 +86,7 @@ end
 ```elixir
 alias Preludex.Verify
 
-{:ok, %{"status" => status}} = Verify.check("123456", "+30123456789")
+{:ok, %{"status" => status}} = Verify.check("123456", "+34123456789")
 
 case status do
   "success" ->
@@ -133,6 +133,19 @@ case Verify.create_or_retry(params) do
     Logger.error("Error creating verification: #{inspect(reason)}")
 end
 ```
+
+## Interactive Demo
+
+We provide an interactive [Livebook](https://livebook.dev/) demo that showcases the Verify API functionality. To run it:
+
+1. Start the Livebook server:
+   ```bash
+   make livebook
+   ```
+
+2. Open your browser and navigate to http://localhost:8080 (you will need the token shown in the terminal when you ran step 1)
+
+3. Open the `verify.livemd` notebook in the `notebooks` directory
 
 ## Development
 

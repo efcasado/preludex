@@ -1,0 +1,68 @@
+# Prelude Verify API Demo
+
+```elixir
+project_root = Path.join(Path.dirname(__DIR__), "")
+Mix.install([
+  {:preludex, path: project_root, force: true},
+  {:kino, "~> 0.14.2"}
+])
+
+alias Preludex.Verify
+```
+
+## Setup
+
+First, let's set up your Prelude API token:
+
+```elixir
+api_token_input = Kino.Input.text("Enter your Prelude API token")
+```
+
+```elixir
+api_token = Kino.Input.read(api_token_input)
+Application.put_env(:preludex, :api_token, api_token)
+```
+
+## Send Verification Code
+
+Enter a phone number to send a verification code:
+
+```elixir
+phone_input = Kino.Input.text("Enter phone number (E.164 format)")
+```
+
+```elixir
+phone_number = Kino.Input.read(phone_input)
+
+case Verify.create_or_retry(phone_number) do
+  {:ok, verification} ->
+    Kino.Markdown.new("""
+    ✅ Verification code sent!")
+    - Status: #{Map.get(verification, "status")}
+    """)
+  {:error, reason} ->
+    Kino.Markdown.new("❌ Error: #{reason}")
+end
+```
+
+## Verify Code
+
+Enter the verification code you received:
+
+```elixir
+code_input = Kino.Input.text("Enter verification code")
+```
+
+```elixir
+code = Kino.Input.read(code_input)
+
+case Verify.check(code, phone_number) do
+  {:ok, verification} ->
+    Kino.Markdown.new("""
+    ✅ Verification successful!
+    - Status: #{Map.get(verification, "status")}
+    """)
+  {:error, reason} ->
+    Kino.Markdown.new("❌ Error: #{reason}")
+end
+```

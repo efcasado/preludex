@@ -25,7 +25,7 @@ function elixir() {
     if [ "$(uname)" = "Linux" ]; then
         DOCKER_RUN_OPTS="--rm -i --network host -v ${PWD}:${PWD}:rw -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro -u $(id -u):$(id -g) -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
     else
-        DOCKER_RUN_OPTS="--rm -i --network host -v ${PWD}:${PWD}:rw -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
+        DOCKER_RUN_OPTS="--rm -i -v ${PWD}:${PWD}:rw -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
     fi
     if [ -n "$ZSH_VERSION" ]; then
         docker run ${=DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^ZSH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} elixir "$@"
@@ -50,7 +50,7 @@ function iex() {
     if [ "$(uname)" = "Linux" ]; then
         DOCKER_RUN_OPTS="--rm -it --network host -v ${PWD}:${PWD}:rw -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro -u $(id -u):$(id -g) -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
     else
-        DOCKER_RUN_OPTS="--rm -it --network host -v ${PWD}:${PWD}:rw -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
+        DOCKER_RUN_OPTS="--rm -it -v ${PWD}:${PWD}:rw -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
     fi
     if [ -n "$ZSH_VERSION" ]; then
         docker run ${=DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^ZSH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} iex "$@"
@@ -75,11 +75,36 @@ function mix() {
     if [ "$(uname)" = "Linux" ]; then
         DOCKER_RUN_OPTS="--rm -it --network host -v ${PWD}:${PWD}:rw -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro -u $(id -u):$(id -g) -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
     else
-        DOCKER_RUN_OPTS="--rm -it --network host -v ${PWD}:${PWD}:rw -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
+        DOCKER_RUN_OPTS="--rm -it -v ${PWD}:${PWD}:rw -w ${PWD} -e HEX_HOME=${PWD} -e MIX_HOME=${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 ${DOCKER_RUN_EXTRA_OPTS}"
     fi
     if [ -n "$ZSH_VERSION" ]; then
         docker run ${=DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^ZSH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} mix "$@"
     else
         docker run ${DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^BASH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} mix "$@"
+    fi
+}
+
+function livebook() {
+    # Store any pre-existing override
+    local OVERRIDE_VERSION=$LIVEBOOK_VERSION
+    # Load latest versions
+    load_versions
+    # Restore override if it was set
+    if [ -n "$OVERRIDE_VERSION" ]; then
+        LIVEBOOK_VERSION=$OVERRIDE_VERSION
+    fi
+    # Allow fallback to default if neither override nor .versions specified
+    LIVEBOOK_VERSION=${LIVEBOOK_VERSION:-0.14.6}
+    DOCKER_IMAGE=ghcr.io/livebook-dev/livebook:${LIVEBOOK_VERSION}
+    # Docker options
+    if [ "$(uname)" = "Linux" ]; then
+        DOCKER_RUN_OPTS="--rm -i -p 8080:8080 -p 8081:8081 --network host -v ${PWD}:${PWD}:rw -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro -u $(id -u):$(id -g) -w ${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -e MIX_ENV=${MIX_ENV:-dev} -e PRELUDE_API_TOKEN=${PRELUDE_API_TOKEN:-} -e LIVEBOOK_HOME=${PWD}/notebooks ${DOCKER_RUN_EXTRA_OPTS}"
+    else
+        DOCKER_RUN_OPTS="--rm -i -p 8080:8080 -p 8081:8081 -v ${PWD}:${PWD}:rw -w ${PWD} -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -e MIX_ENV=${MIX_ENV:-dev} -e PRELUDE_API_TOKEN=${PRELUDE_API_TOKEN:-} -e LIVEBOOK_HOME=${PWD}/notebooks ${DOCKER_RUN_EXTRA_OPTS}"
+    fi
+    if [ -n "$ZSH_VERSION" ]; then
+        docker run ${=DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^ZSH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} "$@"
+    else
+        docker run ${DOCKER_RUN_OPTS} --env-file <(env | grep -v "^_\|^SHLVL\|^PWD\|^OLDPWD\|^PS1\|^ZSH\|^SHELL\|^TERM\|^PATH\|^HOME\|^USER\|^LOGNAME") ${DOCKER_IMAGE} "$@"
     fi
 }
