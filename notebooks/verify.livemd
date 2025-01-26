@@ -12,14 +12,21 @@ alias Preludex.Verify
 
 ## Setup
 
+```elixir
+alias Preludex.Verify
+
+import Kino.Shorts
+```
+
 First, let's set up your Prelude API token:
 
 ```elixir
-api_token_input = Kino.Input.password("Enter your Prelude API token")
-```
+api_token = read_password("Enter your Prelude API token")
 
-```elixir
-api_token = Kino.Input.read(api_token_input)
+if api_token == "" do
+  Kino.interrupt!(:error, "You must provide an API token")
+end
+
 Application.put_env(:preludex, :api_token, api_token)
 ```
 
@@ -28,11 +35,11 @@ Application.put_env(:preludex, :api_token, api_token)
 Enter a phone number to send a verification code:
 
 ```elixir
-phone_input = Kino.Input.text("Enter phone number (E.164 format)")
-```
+phone_number = read_text("Enter phone number (E.164 format)")
 
-```elixir
-phone_number = Kino.Input.read(phone_input)
+if phone_number == "" do
+  Kino.interrupt!(:error, "You must enter the phone number you want to send the verification code to")
+end
 
 case Verify.create_or_retry(phone_number) do
   {:ok, verification} ->
@@ -50,11 +57,12 @@ end
 Enter the verification code you received:
 
 ```elixir
-code_input = Kino.Input.text("Enter verification code")
-```
+code = read_text("Enter verification code")
+phone_number = read_text("Enter phone number (E.164 format))")
 
-```elixir
-code = Kino.Input.read(code_input)
+if code == "" do
+  Kino.interrupt!(:error, "You must enter the OTP code and phone number you want to verify")
+end
 
 case Verify.check(code, phone_number) do
   {:ok, verification} ->
