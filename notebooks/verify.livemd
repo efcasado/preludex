@@ -15,7 +15,7 @@ alias Preludex.Verify
 First, let's set up your Prelude API token:
 
 ```elixir
-api_token_input = Kino.Input.text("Enter your Prelude API token")
+api_token_input = Kino.Input.password("Enter your Prelude API token")
 ```
 
 ```elixir
