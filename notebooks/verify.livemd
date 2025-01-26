@@ -20,6 +20,8 @@ import Kino.Shorts
 
 First, let's set up your Prelude API token:
 
+<!-- livebook:{"reevaluate_automatically":true} -->
+
 ```elixir
 api_token = read_password("Enter your Prelude API token")
 
@@ -33,6 +35,8 @@ Application.put_env(:preludex, :api_token, api_token)
 ## Send Verification Code
 
 Enter a phone number to send a verification code:
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 create_or_retry_form = Kino.Control.form(
@@ -53,6 +57,8 @@ create_or_retry_form = Kino.Control.form(
   submit: "Send"
 )
 ```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 Kino.listen(create_or_retry_form, fn event ->
@@ -77,6 +83,8 @@ end)
 
 Enter the verification code you received:
 
+<!-- livebook:{"reevaluate_automatically":true} -->
+
 ```elixir
 check_form = Kino.Control.form(
   [
@@ -86,6 +94,8 @@ check_form = Kino.Control.form(
   submit: "Send"
 )
 ```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 Kino.listen(check_form, fn event ->
