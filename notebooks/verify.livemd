@@ -35,21 +35,42 @@ Application.put_env(:preludex, :api_token, api_token)
 Enter a phone number to send a verification code:
 
 ```elixir
-phone_number = read_text("Enter phone number (E.164 format)")
+create_or_retry_form = Kino.Control.form(
+  [
+    phone_number: Kino.Input.text("Phone number (E.164 format)"),
+    code_size: Kino.Input.number("Integer between 4 and 8 (defaults to Dashboard setting)"),
+    locale: Kino.Input.select("BCP-47 formatted locale string",
+    [
+      "": nil,
+      "en-US": "English",
+      "es-ES": "Spanish",
+      "fr-FR": "French",
+      "pt-BR": "Portuguese",
+      "tr-TR": "Turkish"
+    ]),
+    sender_id: Kino.Input.text("Custom sender ID (needs to be enabled by Prelude team)")
+  ],
+  submit: "Send"
+)
+```
 
-if phone_number == "" do
-  Kino.interrupt!(:error, "You must enter the phone number you want to send the verification code to")
-end
-
-case Verify.create_or_retry(phone_number) do
-  {:ok, verification} ->
-    Kino.Markdown.new("""
-    ✅ Verification code sent!")
-    - Status: #{Map.get(verification, "status")}
-    """)
-  {:error, reason} ->
-    Kino.Markdown.new("❌ Error: #{reason}")
-end
+```elixir
+Kino.listen(create_or_retry_form, fn event ->
+  case Verify.create_or_retry(event.data.phone_number,
+    code_size: event.data.code_size,
+    locale: event.data.locale,
+    sender_id: event.data.sender_id
+  ) do
+    {:ok, verification} ->
+      Kino.render(Kino.Markdown.new("""
+      ✅ Request succeeded! Status: `#{Map.get(verification, "status")}`
+      """))
+    {:error, reason} ->
+      Kino.render(Kino.Markdown.new("""
+      ❌ Request failed: `#{reason}`
+      """))
+  end
+end)
 ```
 
 ## Verify Code
@@ -57,20 +78,26 @@ end
 Enter the verification code you received:
 
 ```elixir
-code = read_text("Enter verification code")
-phone_number = read_text("Enter phone number (E.164 format))")
+check_form = Kino.Control.form(
+  [
+    code: Kino.Input.text("Verification code"),
+    phone_number: Kino.Input.text("Phone number (E.164 format)")
+  ],
+  submit: "Send"
+)
+```
 
-if code == "" do
-  Kino.interrupt!(:error, "You must enter the OTP code and phone number you want to verify")
-end
-
-case Verify.check(code, phone_number) do
-  {:ok, verification} ->
-    Kino.Markdown.new("""
-    ✅ Verification successful!
-    - Status: #{Map.get(verification, "status")}
-    """)
-  {:error, reason} ->
-    Kino.Markdown.new("❌ Error: #{reason}")
-end
+```elixir
+Kino.listen(check_form, fn event ->
+  case Verify.check(event.data.code, event.data.phone_number) do
+    {:ok, verification} ->
+      Kino.render(Kino.Markdown.new("""
+      ✅ Request succeeded! Status: `#{Map.get(verification, "status")}`
+      """))
+    {:error, reason} ->
+      Kino.render(Kino.Markdown.new("""
+      ❌ Request failed: `#{reason}`
+      """))
+  end
+end)
 ```
