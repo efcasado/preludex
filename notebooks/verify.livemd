@@ -16,11 +16,11 @@ alias Preludex.Verify
 alias Preludex.Verify
 
 import Kino.Shorts
+
+Logger.configure(level: :none)
 ```
 
 First, let's set up your Prelude API token:
-
-<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 api_token = read_password("Enter your Prelude API token")
@@ -34,11 +34,9 @@ Application.put_env(:preludex, :api_token, api_token)
 
 ## Send Verification Code
 
-Enter a phone number to send a verification code:
-
-<!-- livebook:{"reevaluate_automatically":true} -->
-
 ```elixir
+frame1 = Kino.Frame.new()
+
 create_or_retry_form = Kino.Control.form(
   [
     phone_number: Kino.Input.text("Phone number (E.164 format)"),
@@ -56,36 +54,36 @@ create_or_retry_form = Kino.Control.form(
   ],
   submit: "Send"
 )
-```
 
-<!-- livebook:{"reevaluate_automatically":true} -->
+Kino.Frame.render(frame1, create_or_retry_form)
 
-```elixir
 Kino.listen(create_or_retry_form, fn event ->
-  case Verify.create_or_retry(event.data.phone_number,
+  result = case Verify.create_or_retry(event.data.phone_number,
     code_size: event.data.code_size,
     locale: event.data.locale,
     sender_id: event.data.sender_id
   ) do
     {:ok, verification} ->
-      Kino.render(Kino.Markdown.new("""
+      Kino.Markdown.new("""
       ✅ Request succeeded! Status: `#{Map.get(verification, "status")}`
-      """))
+      """)
     {:error, reason} ->
-      Kino.render(Kino.Markdown.new("""
+      Kino.Markdown.new("""
       ❌ Request failed: `#{reason}`
-      """))
+      """)
   end
+  Kino.Frame.render(frame1, create_or_retry_form)
+  Kino.Frame.append(frame1, result)
 end)
+
+frame1
 ```
 
-## Verify Code
-
-Enter the verification code you received:
-
-<!-- livebook:{"reevaluate_automatically":true} -->
+## Check Verification Code
 
 ```elixir
+frame2 = Kino.Frame.new()
+
 check_form = Kino.Control.form(
   [
     code: Kino.Input.text("Verification code"),
@@ -93,21 +91,23 @@ check_form = Kino.Control.form(
   ],
   submit: "Send"
 )
-```
 
-<!-- livebook:{"reevaluate_automatically":true} -->
+Kino.Frame.render(frame2, check_form)
 
-```elixir
 Kino.listen(check_form, fn event ->
-  case Verify.check(event.data.code, event.data.phone_number) do
+  result = case Verify.check(event.data.code, event.data.phone_number) do
     {:ok, verification} ->
-      Kino.render(Kino.Markdown.new("""
+      Kino.Markdown.new("""
       ✅ Request succeeded! Status: `#{Map.get(verification, "status")}`
-      """))
+      """)
     {:error, reason} ->
-      Kino.render(Kino.Markdown.new("""
+      Kino.Markdown.new("""
       ❌ Request failed: `#{reason}`
-      """))
+      """)
   end
+  Kino.Frame.render(frame2, check_form)
+  Kino.Frame.append(frame2, result)
 end)
+
+frame2
 ```
